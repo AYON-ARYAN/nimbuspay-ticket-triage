@@ -1,0 +1,8 @@
+# never commit the assignment data or the base model
+data/
+build/
+__pycache__/
+.ipynb_checkpoints/
+# stray training checkpoints (the final adapter IS committed - see README)
+checkpoint-*/
+run_*/
