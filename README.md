@@ -1,9 +1,11 @@
 # NimbusPay Ticket Triage — LoRA fine-tune
 
 **Base model:** `Qwen/Qwen2.5-1.5B-Instruct` — 1.54B params, under the 4B cap
-**Loaded in 4-bit?** **No** — the final adapter is 16-bit LoRA. A 4-bit QLoRA arm is *coded* as
-experiment E2 but was **not run** in this pass (see "Status" below); the base model is small enough
-that 16-bit already fits a T4 at 11.82 GB peak, so QLoRA would buy headroom rather than feasibility.
+**Loaded in 4-bit?** **No** — the final adapter is 16-bit LoRA. The 4-bit QLoRA arm (E2a) is coded
+and was launched, but the Colab runtime dropped mid-run and the free-tier GPU quota ran out before it
+could be restarted, so that one row of the Part D table is **not reported** (see "Status"). The base
+model is small enough that 16-bit already fits a T4 at 11.82 GB peak, so QLoRA would buy headroom
+rather than feasibility.
 **Trainable parameters:** 18.46M (`r=16`, all attention + MLP projections) — 36.9% of the 50M cap.
 
 **Best result:** dev **exact match 90.0%**, **mean field accuracy 97.9%**, **JSON validity 100%** (n=200),
@@ -11,16 +13,24 @@ up from 0.0% / 0.0% / 0.0% for the un-tuned base model on the same fixed prompt.
 on a free Colab T4 at **11.82 GB** peak. All 400 test predictions parse with the correct key set, and the
 saved adapter reloaded from disk reproduces 12/12 sampled rows exactly.
 
+The best *experimental* arm was **E6** (+720 counterfactual minimal pairs) at **93.0% exact / 98.8%
+field**. The submitted adapter is the E0 configuration, not E6 — the reason is in `report.md` §5.
+
 ---
 
 ## Status
 
-Parts A (audit), B (baselines), C (fine-tuning) and E (error analysis) are complete, and the hidden-test
-predictions are generated and verified. **Part D (controlled experiments) is not filled in.** This run
-used `RUN_EXPERIMENTS = False`, which completes everything else in ~47 min inside one free-tier session.
-The reference arm E0 *is* the final run reported above; the other seven arms are implemented and run
-from a single flag, needing roughly 2.5 h more T4 time. `report.md` §4 states this plainly rather than
-implying the table exists.
+Parts A (audit), B (baselines), C (fine-tuning), D (experiments) and E (error analysis) are complete,
+and the hidden-test predictions are generated and verified.
+
+**Part D has five arms, and one gap I am not hiding.** `report.md` §4 and `experiments_results.json`
+carry the table: E0 (reference), E1a (raw vs cleaned data), E3a (epochs), and E5 + E6 (my two own
+ideas). The 4-bit QLoRA arm **E2a did not finish** — the runtime disconnected mid-run and the
+free-tier GPU quota was exhausted before it could be restarted. Three of the four mandated
+comparisons are reported; that one is missing, and I report the gap rather than estimate the row.
+
+The final-model pass uses `RUN_EXPERIMENTS = False`, which completes everything except Part D in
+~47 min inside one free-tier session. The reference arm E0 *is* the final run reported above.
 
 ## Layout
 
@@ -33,6 +43,7 @@ implying the table exists.
 | `src/audit.py` | The audit + cleaner as a standalone script, runnable with no GPU and no dependencies |
 | `adapter/` | Final PEFT adapter — `adapter_config.json` + `adapter_model.safetensors` (70.5 MB, under GitHub's 100 MB limit, so no Git LFS) |
 | `predictions_test.jsonl` | 400 lines of `{"id","output"}`, all parsing with the correct 8-key set |
+| `experiments_results.json` | The Part D table as data — one record per arm, including E2a marked not-completed |
 | `final_metrics.json`, `baselines.json`, `error_attribution.json`, `dev_predictions.jsonl` | Raw numbers behind every figure in the report |
 
 ## Reproducing
@@ -60,9 +71,9 @@ The training half needs a T4:
    400 test predictions 6.6 min) — well inside the 3-hour budget.
 4. The last cell zips everything to `/content/nimbuspay_artifacts.zip` (~72 MB). Download it from the
    Files panel — **artifacts are VM-local and are lost when the runtime recycles.**
-5. To produce the Part D table, set `RUN_EXPERIMENTS = True` and run once more. It trains seven
-   configurations and checkpoints `experiments_results.json` after each, so a disconnect loses at
-   most one run. Then set it back to `False`.
+5. The Part D table comes from setting `RUN_EXPERIMENTS = True` and running again. It checkpoints
+   `experiments_results.json` after every arm, so a disconnect loses at most the run in flight —
+   which is exactly what happened to E2a. Then set it back to `False`.
 
 ## Inference contract
 
@@ -97,10 +108,13 @@ so key *order* is not scored — verified against the real scorer. The schema's 
 writing the amount down. Training on
 `category → amount_paise → priority → needs_human → ...` lets each rule-derived field attend to its
 own inputs: chain-of-thought inside a fixed 8-key schema, at zero token cost. Experiment E5.
+**Measured: 89.0% vs E0's 90.0% — no effect.** The amount is in the *input*, which attention reads
+from every output position, so reordering buys nothing when the value only has to be looked up
+rather than derived. Reported as a negative result; it is what sharpened the diagnosis behind E6.
 
 **Counterfactual minimal pairs.** The whole decision surface rests on thinly-taught triggers (the
 ₹5,000 boundary: 61 rows; ₹50,000: 45; legal threats: 87; quoted `>` history: 38 rows against 11 of
 400 test rows). Since the rule engine is exact on dev it serves as a **label oracle** — mutate one
 trigger in a real ticket, recompute the label deterministically. 720 generated rows, all passing the
 validator dev passes, zero independent re-derivation mismatches; threshold coverage 106 → 264 rows.
-Experiment E6.
+Experiment E6. **Measured: 93.0% exact / 98.8% field — the best arm, +3.0 over E0.**

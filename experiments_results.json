@@ -1,0 +1,30 @@
+[
+ {"name": "E0_cleaned_baseline", "rows_key": "clean", "four_bit": false, "r": 16, "lr": 2e-4,
+  "epochs": 3, "order": "schema", "n_train": 1350, "trainable_M": 18.46,
+  "exact_match": 0.900, "mean_field_acc": 0.979, "peak_gpu_gb": 11.82, "train_minutes": 19.9,
+  "note": "reference arm; identical config to the FINAL model in notebook.ipynb"},
+
+ {"name": "E1a_raw_data", "rows_key": "raw", "four_bit": false, "r": 16, "lr": 2e-4,
+  "epochs": 3, "order": "schema", "n_train": 1420, "trainable_M": 18.46,
+  "exact_match": 0.790, "mean_field_acc": 0.966, "peak_gpu_gb": 11.82, "train_minutes": 21.0,
+  "note": "267 steps; training loss higher than E0 at every logged checkpoint"},
+
+ {"name": "E3a_epochs_2", "rows_key": "clean", "four_bit": false, "r": 16, "lr": 2e-4,
+  "epochs": 2, "order": "schema", "n_train": 1350, "trainable_M": 18.46,
+  "exact_match": 0.740, "mean_field_acc": 0.955, "peak_gpu_gb": 11.82, "train_minutes": 12.7,
+  "note": "170 steps; train loss reached 0.0097 yet dev exact match is 16 pts below E0"},
+
+ {"name": "E5_key_order_dep", "rows_key": "clean", "four_bit": false, "r": 16, "lr": 2e-4,
+  "epochs": 3, "order": "dep", "n_train": 1350, "trainable_M": 18.46,
+  "exact_match": 0.890, "mean_field_acc": 0.979, "peak_gpu_gb": 11.82, "train_minutes": 19.0,
+  "note": "dependency-ordered JSON keys; no measurable effect (1 pt = 2 rows at n=200)"},
+
+ {"name": "E6_counterfactual", "rows_key": "cf", "four_bit": false, "r": 16, "lr": 2e-4,
+  "epochs": 3, "order": "schema", "n_train": 2070, "trainable_M": 18.46,
+  "exact_match": 0.930, "mean_field_acc": 0.988, "peak_gpu_gb": 11.99, "train_minutes": 43.2,
+  "note": "cleaned 1350 + 720 counterfactual minimal pairs; 390 steps; BEST ARM"},
+
+ {"name": "E2a_qlora_4bit", "rows_key": "clean", "four_bit": true, "r": 16, "lr": 2e-4,
+  "epochs": 3, "order": "schema", "n_train": 1350, "trainable_M": 18.46,
+  "failed": "not completed - Colab free-tier runtime disconnected mid-run and the daily GPU quota was exhausted before a restart (\"cannot connect to a GPU due to usage limits in Colab\"); VM-local artifacts lost"}
+]
