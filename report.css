@@ -1,5 +1,5 @@
-@page { size: A4; margin: 1.6cm; }
-body { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 10pt; line-height: 1.2; }
+@page { size: A4; margin: 1.45cm; }
+body { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 9.7pt; line-height: 1.18; }
 h1 { font-size: 14pt; margin: 0 0 .3em; } h2 { font-size: 11.5pt; margin: .55em 0 .2em; }
 table { border-collapse: collapse; font-size: 8pt; width: 100%; }
 th, td { border: 1px solid #bbb; padding: 1.5px 4px; }

@@ -1,16 +1,16 @@
 {
  "roots": {
-  "priority: near a rupee threshold: boundary misapplied": 9,
-  "priority: ladder misapplied (P1 -> P3)": 1,
-  "priority: ladder misapplied (P2 -> P1)": 2,
-  "category: confused fraud -> refund": 2,
-  "txn_date: relative-date arithmetic off by +1 days": 2,
-  "priority: ladder misapplied (P2 -> P3)": 2,
+  "category: confused payment_failed -> fraud": 2,
+  "txn_date: relative-date arithmetic off by -1 days": 1,
+  "priority: ladder misapplied (P1 -> P2)": 1,
+  "priority: near a rupee threshold: boundary misapplied": 4,
+  "txn_date: relative-date arithmetic off by +2 days": 1,
   "category: confused fraud -> account_access": 1,
-  "category: confused payment_failed -> fraud": 1
+  "priority: ladder misapplied (P3 -> P2)": 1,
+  "channel: missed the stated channel": 1
  },
  "cascades": {
-  "needs_human: CASCADE: consistent with its own wrong priority": 11,
-  "priority: CASCADE: ladder correct for its own (wrong) category/amount": 3
+  "priority: CASCADE: ladder correct for its own (wrong) category/amount": 2,
+  "needs_human: CASCADE: consistent with its own wrong priority": 4
  }
 }

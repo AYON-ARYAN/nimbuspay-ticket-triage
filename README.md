@@ -3,18 +3,19 @@
 **Base model:** `Qwen/Qwen2.5-1.5B-Instruct` — 1.54B params, under the 4B cap
 **Loaded in 4-bit?** **No** — the final adapter is 16-bit LoRA, and that is a measured choice, not
 a default. Experiment **E2a** ran the same configuration in 4-bit QLoRA: it scored **82.5%** against
-16-bit's 90.0%, saved only **0.74 GB** of peak memory, and took **4 minutes longer**. At 1.5B the base
-already fits a T4 at 11.82 GB, so quantization buys headroom this model does not need and costs 7.5
-points of exact match to get it.
+16-bit's 90.0% on the same data, saved only **0.74 GB** of peak memory, and took **4 minutes longer**.
+At 1.5B the base already fits a T4 in 11.82 GB, so quantization buys headroom this model does not need
+and costs 7.5 points of exact match to get it.
 **Trainable parameters:** 18.46M (`r=16`, all attention + MLP projections) — 36.9% of the 50M cap.
 
-**Best result:** dev **exact match 90.0%**, **mean field accuracy 97.9%**, **JSON validity 100%** (n=200),
-up from 0.0% / 0.0% / 0.0% for the un-tuned base model on the same fixed prompt. Trained in **19.9 min**
-on a free Colab T4 at **11.82 GB** peak. All 400 test predictions parse with the correct key set, and the
-saved adapter reloaded from disk reproduces 12/12 sampled rows exactly.
+**Best result:** dev **exact match 94.0%**, **mean field accuracy 98.9%**, **JSON validity 100%** (n=200),
+up from 0.0% / 0.0% / 0.0% for the un-tuned base model on the same fixed prompt. Trained in **51.5 min**
+on a free T4 at **12.00 GB** peak. All 400 test predictions parse with the correct key set, and the saved
+adapter reloaded from disk reproduces 12/12 sampled rows exactly.
 
-The best *experimental* arm was **E6** (+720 counterfactual minimal pairs) at **93.0% exact / 98.8%
-field**. The submitted adapter is the E0 configuration, not E6 — the reason is in `report.md` §5.
+The submitted model is the **E6** configuration — the cleaned 1,350 rows plus **720 counterfactual
+minimal pairs** I generated, which was the best arm in Part D. Against the E0 reference (cleaned data
+alone, 90.0%) that is **+4.0 points**, and `priority` rises 91.5% → 96.0%.
 
 ---
 
@@ -37,7 +38,7 @@ The final-model pass uses `RUN_EXPERIMENTS = False`, which completes everything 
 
 | Path | What it is |
 |---|---|
-| `notebook.ipynb` | The whole pipeline, **with outputs** from the run that produced every number here: audit → baselines → fine-tune → error analysis → test predictions |
+| `notebook.ipynb` | The whole pipeline, **with outputs** from the single run that produced every number here: audit → baselines → fine-tune → error analysis → test predictions. It is the executed copy from that Kaggle run; the one Kaggle-only cell that extracted it (Kaggle hides files named `__notebook__.ipynb`) has been removed, so all 29 code cells are pipeline code and every one carries its real output. Paths resolve from a `WORK` root, so it runs unchanged on Colab or Kaggle |
 | `report.pdf` | **The 3-page report** (page count verified by rendering, not estimated) |
 | `report.md` | Same content as Markdown, for reading in the repo; `report.css` is the stylesheet used to render the PDF |
 | `cleaning_log.csv` | 388 rows of `id,action,reason` — every row dropped or fixed |
@@ -67,10 +68,10 @@ The training half needs a T4:
    every artifact to `/content/out`. (If the files are missing, the data cell falls back to an
    interactive upload prompt and then asserts all three are present before continuing.)
 3. **Run all.** With `RUN_EXPERIMENTS = False` this runs the audit, both baselines, the final model,
-   dev scoring, the error analysis and the test predictions. Measured end-to-end: **~47 min** on a
-   free T4 (install 16 s, audit <1 min, baselines 2.5 min each, training 19.9 min, dev eval 3 min,
-   400 test predictions 6.6 min) — well inside the 3-hour budget.
-4. The last cell zips everything to `/content/nimbuspay_artifacts.zip` (~72 MB). Download it from the
+   dev scoring, the error analysis and the test predictions. Measured end-to-end: **~1 h 8 min** on a
+   free T4 (install, audit <1 min, baselines ~2.5 min each, training 51.5 min on the 2,070-row
+   augmented set, dev eval ~3 min, 400 test predictions ~7 min) — inside the 3-hour budget.
+4. The last cell zips everything to `$WORK/nimbuspay_artifacts.zip` (~91 MB). Download it from the
    Files panel — **artifacts are VM-local and are lost when the runtime recycles.**
 5. The Part D table comes from setting `RUN_EXPERIMENTS = True` and running again. It checkpoints
    `experiments_results.json` after every arm, so a disconnect loses at most the run in flight —
@@ -118,4 +119,6 @@ rather than derived. Reported as a negative result; it is what sharpened the dia
 400 test rows). Since the rule engine is exact on dev it serves as a **label oracle** — mutate one
 trigger in a real ticket, recompute the label deterministically. 720 generated rows, all passing the
 validator dev passes, zero independent re-derivation mismatches; threshold coverage 106 → 264 rows.
-Experiment E6. **Measured: 93.0% exact / 98.8% field — the best arm, +3.0 over E0.**
+Experiment E6, and **this is the submitted model**: retrained as the final run it scores **94.0% exact
+/ 98.9% field**, against the E0 reference's 90.0% / 97.9%. The targeted error class moved with it —
+rupee-threshold mistakes fall from 9 of 20 root causes to 4 of 12 (`report.md` §3).

@@ -1,6 +1,6 @@
 {
  "name": "FINAL",
- "n_train": 1350,
+ "n_train": 2070,
  "four_bit": false,
  "r": 16,
  "lr": 0.0002,
@@ -8,20 +8,20 @@
  "max_len": 2240,
  "order": "schema",
  "trainable_M": 18.46,
- "exact_match": 0.9,
- "mean_field_acc": 0.97875,
+ "exact_match": 0.94,
+ "mean_field_acc": 0.98875,
  "json_valid": 1.0,
- "peak_gpu_gb": 11.82,
- "train_minutes": 19.9,
- "final_loss": 0.0644,
+ "peak_gpu_gb": 12.0,
+ "train_minutes": 51.5,
+ "final_loss": 0.0474,
  "fields": {
-  "category": 0.98,
-  "priority": 0.915,
+  "category": 0.985,
+  "priority": 0.96,
   "amount_paise": 1.0,
   "txn_date": 0.99,
   "txn_id": 1.0,
-  "channel": 1.0,
+  "channel": 0.995,
   "language": 1.0,
-  "needs_human": 0.945
+  "needs_human": 0.98
  }
 }
