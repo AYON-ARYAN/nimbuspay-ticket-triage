@@ -1,11 +1,11 @@
 # NimbusPay Ticket Triage — LoRA fine-tune
 
 **Base model:** `Qwen/Qwen2.5-1.5B-Instruct` — 1.54B params, under the 4B cap
-**Loaded in 4-bit?** **No** — the final adapter is 16-bit LoRA. The 4-bit QLoRA arm (E2a) is coded
-and was launched, but the Colab runtime dropped mid-run and the free-tier GPU quota ran out before it
-could be restarted, so that one row of the Part D table is **not reported** (see "Status"). The base
-model is small enough that 16-bit already fits a T4 at 11.82 GB peak, so QLoRA would buy headroom
-rather than feasibility.
+**Loaded in 4-bit?** **No** — the final adapter is 16-bit LoRA, and that is a measured choice, not
+a default. Experiment **E2a** ran the same configuration in 4-bit QLoRA: it scored **82.5%** against
+16-bit's 90.0%, saved only **0.74 GB** of peak memory, and took **4 minutes longer**. At 1.5B the base
+already fits a T4 at 11.82 GB, so quantization buys headroom this model does not need and costs 7.5
+points of exact match to get it.
 **Trainable parameters:** 18.46M (`r=16`, all attention + MLP projections) — 36.9% of the 50M cap.
 
 **Best result:** dev **exact match 90.0%**, **mean field accuracy 97.9%**, **JSON validity 100%** (n=200),
@@ -23,11 +23,12 @@ field**. The submitted adapter is the E0 configuration, not E6 — the reason is
 Parts A (audit), B (baselines), C (fine-tuning), D (experiments) and E (error analysis) are complete,
 and the hidden-test predictions are generated and verified.
 
-**Part D has five arms, and one gap I am not hiding.** `report.md` §4 and `experiments_results.json`
-carry the table: E0 (reference), E1a (raw vs cleaned data), E3a (epochs), and E5 + E6 (my two own
-ideas). The 4-bit QLoRA arm **E2a did not finish** — the runtime disconnected mid-run and the
-free-tier GPU quota was exhausted before it could be restarted. Three of the four mandated
-comparisons are reported; that one is missing, and I report the gap rather than estimate the row.
+**Part D has six arms, covering all four mandated comparisons.** `report.md` §4 and
+`experiments_results.json` carry the table: E0 (reference), E1a (raw vs cleaned data), E2a (16-bit vs
+4-bit QLoRA), E3a (epochs), and E5 + E6 (my two own ideas). E2a was measured on a **Kaggle** Tesla T4
+after the Colab daily GPU quota ran out — same GPU, one device pinned with `CUDA_VISIBLE_DEVICES=0`
+so its memory and time figures stay comparable to the other arms. The notebook resolves its paths
+from a `WORK` root and runs unchanged on either host.
 
 The final-model pass uses `RUN_EXPERIMENTS = False`, which completes everything except Part D in
 ~47 min inside one free-tier session. The reference arm E0 *is* the final run reported above.
