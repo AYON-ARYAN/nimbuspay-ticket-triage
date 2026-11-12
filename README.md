@@ -32,7 +32,8 @@ so its memory and time figures stay comparable to the other arms. The notebook r
 from a `WORK` root and runs unchanged on either host.
 
 The final-model pass uses `RUN_EXPERIMENTS = False`, which completes everything except Part D in
-~47 min inside one free-tier session. The reference arm E0 *is* the final run reported above.
+~1 h 8 min inside one free-tier session. It trains the **E6** configuration — the submitted model.
+E0 is the reference arm E6 is measured against, not the final run.
 
 ## Layout
 
@@ -45,7 +46,7 @@ The final-model pass uses `RUN_EXPERIMENTS = False`, which completes everything 
 | `src/audit.py` | The audit + cleaner as a standalone script, runnable with no GPU and no dependencies |
 | `adapter/` | Final PEFT adapter — `adapter_config.json` + `adapter_model.safetensors` (70.5 MB, under GitHub's 100 MB limit, so no Git LFS) |
 | `predictions_test.jsonl` | 400 lines of `{"id","output"}`, all parsing with the correct 8-key set |
-| `experiments_results.json` | The Part D table as data — one record per arm, including E2a marked not-completed |
+| `experiments_results.json` | The Part D table as data — one record per arm, all six completed. The E6 row is that arm's own Colab run (93.0%); the submitted model is the same config retrained on Kaggle (94.0%) — `report.md` §4 covers the run-to-run spread |
 | `final_metrics.json`, `baselines.json`, `error_attribution.json`, `dev_predictions.jsonl` | Raw numbers behind every figure in the report |
 
 ## Reproducing
